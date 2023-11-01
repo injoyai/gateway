@@ -1,9 +1,11 @@
 package common
 
-import "github.com/injoyai/conv"
+import (
+	"github.com/injoyai/conv/cfg"
+)
 
-var Cfg *conv.Map
+var Cfg *cfg.Entity
 
 func initCfg() {
-
+	Cfg = cfg.New(DefaultConfigPath)
 }

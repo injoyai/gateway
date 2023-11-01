@@ -1,6 +1,8 @@
 package common
 
-import "github.com/injoyai/gateway/internal/script"
+import (
+	"github.com/injoyai/gateway/internal/script"
+)
 
 var (
 	Script *script.Pool

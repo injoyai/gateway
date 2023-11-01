@@ -1,0 +1,33 @@
+{
+  "listen": {
+    "http": {
+      "port": 10081
+    },
+    "mqtt": {
+      "port": 10082
+    },
+    "serial": {
+      "address": "COM6",
+      "baudRate": 9600,
+      "dataBits": 8,
+      "stopBits": 1,
+      "parity": "N",
+      "timeout": 5000,
+      "rs485": {
+        "enabled": false,
+        "delayRtsBeforeSend": 0,
+        "delayCtsBeforeSend": 0,
+        "rtsHighDuringSend": false,
+        "rtsHighAfterSend": false,
+        "rxDuringTx": false
+      }
+    },
+    "tcp": {
+      "port": 10083,
+      "timeout": 300000
+    },
+    "udp": {
+      "port": 10084
+    }
+  }
+}

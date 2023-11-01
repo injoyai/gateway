@@ -2,6 +2,6 @@ package boot
 
 import "github.com/injoyai/gateway/internal/common"
 
-func Init() {
+func initCommon() {
 	common.Init()
 }

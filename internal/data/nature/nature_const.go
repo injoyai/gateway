@@ -26,6 +26,7 @@ const (
 	Bool   ValueType = "BOOL"
 	Int    ValueType = "INT"
 	Float  ValueType = "FLOAT"
+	Script ValueType = "SCRIPT"
 )
 
 var (
