@@ -15,7 +15,7 @@ require (
 require (
 	github.com/gin-gonic/gin v1.7.4
 	github.com/gogf/gf v1.16.9
-	github.com/gomodule/redigo v1.9.2
+	github.com/gomodule/redigo v1.9.2 // indirect
 	github.com/injoyai/base v1.0.8
 	github.com/injoyai/goutil v0.0.0-20240523075747-dfca2e705769
 

@@ -1,4 +1,4 @@
-package dsl
+package v1
 
 import (
 	"github.com/injoyai/conv"
@@ -12,7 +12,7 @@ import (
 
 func New(dir string, options ...func(*dsl.Decode)) (map[string]common.Decoder, error) {
 	m := map[string]common.Decoder{}
-	oss.RangeFileInfo(dir, func(info fs.FileInfo) (bool, error) {
+	err := oss.RangeFileInfo(dir, func(info fs.FileInfo) (bool, error) {
 		if !info.IsDir() {
 			bs, err := os.ReadFile(filepath.Join(dir, info.Name()))
 			if err != nil {
@@ -26,7 +26,7 @@ func New(dir string, options ...func(*dsl.Decode)) (map[string]common.Decoder, e
 		}
 		return true, nil
 	})
-	return m, nil
+	return m, err
 }
 
 type decode struct {

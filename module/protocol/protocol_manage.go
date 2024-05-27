@@ -2,7 +2,7 @@ package protocol
 
 import (
 	"github.com/injoyai/gateway/module/protocol/built"
-	"github.com/injoyai/gateway/module/protocol/dsl/v1"
+	v1 "github.com/injoyai/gateway/module/protocol/dsl/v1"
 	"github.com/injoyai/gateway/module/protocol/internal/common"
 )
 
@@ -15,17 +15,16 @@ func New(cfg *Config) (*Manager, error) {
 	m := &Manager{
 		built: map[string]common.Decoder{},
 		dsl:   map[string]common.Decoder{},
-		null:  &Null{},
 	}
 
 	//加载内置协议
 	for k, v := range built.All {
-		m.built[k] = v
+		m.Register(k, v)
 	}
 
 	//加载dsl
 	var err error
-	m.dsl, err = dsl.New(cfg.DslDir)
+	m.dsl, err = v1.New(cfg.DslDir)
 
 	return m, err
 }
@@ -33,11 +32,10 @@ func New(cfg *Config) (*Manager, error) {
 type Manager struct {
 	built map[string]common.Decoder
 	dsl   map[string]common.Decoder
-	null  *Null
 }
 
 // Register 注册协议解析,代码层面,
-// 当数量很大的时候,脚本得速度不能满足使用时,需要从代码层面进行性能的提升
+// 当数量很大的时候,脚本得速度不能满足时,可以从代码层面进行性能的提升
 func (this *Manager) Register(name string, codec common.Decoder) {
 	this.built[name] = codec
 }
