@@ -3,14 +3,14 @@ package v1
 import "github.com/injoyai/goutil/other/trunk"
 
 func New() *MQ {
-	return &MQ{trunk.New()}
+	return &MQ{trunk.NewGroup()}
 }
 
 type MQ struct {
-	*trunk.Entity
+	*trunk.Group
 }
 
 func (this *MQ) Publish(topic string, data interface{}) error {
-	this.Entity.Publish(topic, data)
+	this.Group.Publish(topic, data)
 	return nil
 }
