@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	g.Input()
+	g.Input("按回车键结束...")
 }

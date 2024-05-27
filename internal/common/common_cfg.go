@@ -4,8 +4,6 @@ import (
 	"github.com/injoyai/conv/cfg"
 )
 
-var Cfg *cfg.Entity
+var Cfg = cfg.New(DefaultConfigPath)
 
-func initCfg() {
-	Cfg = cfg.New(DefaultConfigPath)
-}
+func initCfg() {}

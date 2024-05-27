@@ -2,9 +2,9 @@ package listen
 
 import (
 	"github.com/injoyai/io"
-	"github.com/injoyai/io/dial"
+	"github.com/injoyai/io/listen"
 )
 
 func NewUDP(port int, option ...io.OptionServer) (*io.Server, error) {
-	return dial.NewUDPServer(port, option...)
+	return listen.NewUDPServer(port, option...)
 }

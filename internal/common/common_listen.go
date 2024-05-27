@@ -2,37 +2,39 @@ package common
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/injoyai/gateway/internal/data/listen"
-	"github.com/injoyai/goutil/frame/gin"
 	"github.com/injoyai/io"
 	"github.com/injoyai/io/dial"
 	"github.com/injoyai/logs"
 )
 
 var (
-	HTTPServer   *gin.Server
+	HTTPServer   *gin.Engine
 	MQTTServer   *io.Server
 	SerialClient *io.Client
 	TCPServer    *io.Server
 	UDPServer    *io.Server
+	Bridge       *listen.BridgeServer
 )
 
 func initListen() {
-	initListenHTTP()
 	initListenMQTT()
 	initListenSerial()
 	initListenTCP()
 	initListenUDP()
+	initListenBridge()
+	initListenHTTP()
 }
 
 func initListenHTTP() {
-	var err error
-	httpPort := Cfg.GetInt("listen.http.port")
-	HTTPServer, err = listen.NewHTTP(httpPort)
-	logs.PrintErr(err)
-	if HTTPServer != nil {
-		go HTTPServer.Run()
-	}
+	HTTPServer = gin.Default()
+}
+
+func RunHTTPServer() {
+	httpPort := Cfg.GetInt("http.port")
+	httpAddr := fmt.Sprintf(":%d", httpPort)
+	HTTPServer.Run(httpAddr)
 }
 
 func initListenMQTT() {
@@ -90,5 +92,17 @@ func initListenUDP() {
 	logs.PrintErr(err)
 	if UDPServer != nil {
 		go UDPServer.Run()
+	}
+}
+
+func initListenBridge() {
+	var err error
+	tcpPort := Cfg.GetInt("listen.bridge.port")
+	Bridge, err = listen.NewBridge(tcpPort, func(s *io.Server) {
+		s.SetTimeout(Cfg.GetMillisecond("listen.bridge.timeout"))
+	})
+	logs.PrintErr(err)
+	if Bridge != nil {
+		go Bridge.Run()
 	}
 }

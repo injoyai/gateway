@@ -12,12 +12,12 @@ type Model struct {
 
 func NewModel(n Nature) *Model {
 	return &Model{
-		Name:     n.Name(),
-		Memo:     n.Memo(),
-		Key:      n.Key(),
-		Type:     n.Type(),
-		Unit:     n.Unit(),
-		Readable: n.Readable(),
-		Writable: n.Writable(),
+		Name:     n.GetName(),
+		Memo:     n.GetMemo(),
+		Key:      n.GetKey(),
+		Type:     n.GetType(),
+		Unit:     n.GetUnit(),
+		Readable: n.GetReadable(),
+		Writable: n.GetWritable(),
 	}
 }

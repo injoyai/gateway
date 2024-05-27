@@ -2,9 +2,9 @@ package listen
 
 import (
 	"github.com/injoyai/io"
-	"github.com/injoyai/io/dial"
+	"github.com/injoyai/io/listen"
 )
 
 func NewTCP(port int, option ...io.OptionServer) (*io.Server, error) {
-	return dial.NewTCPServer(port, option...)
+	return listen.NewTCPServer(port, option...)
 }

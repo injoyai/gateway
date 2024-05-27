@@ -1,0 +1,27 @@
+#数据库配置
+database:
+  type: mysql
+  host: 127.0.0.1
+  port: 3306
+  username: root
+  password: root
+  database: test
+
+  fieldSync: true
+  tablePrefix:
+
+redis:
+  addr: 127.0.0.1:6379
+  password:
+  db:
+
+
+#协议配置
+protocol:
+  dslDir: ./data/dsl/
+
+#推送配置
+push:
+  type: http
+  host: 127.0.0.1
+  port: 8080

@@ -1,8 +1,15 @@
 package main
 
-import "github.com/injoyai/gateway/internal/boot"
+import (
+	"github.com/injoyai/gateway/internal/boot"
+	"github.com/injoyai/gateway/internal/common"
+)
 
 func main() {
+
+	//初始化
 	boot.Init()
-	select {}
+
+	//运行http服务
+	common.RunHTTPServer()
 }
