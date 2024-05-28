@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/gorilla/websocket v1.5.0
-	github.com/injoyai/conv v1.1.2
+	github.com/injoyai/conv v1.1.6
 	github.com/injoyai/io v0.1.8
 	github.com/injoyai/logs v1.0.7
 	github.com/json-iterator/go v1.1.12
@@ -18,5 +18,6 @@ require (
 	github.com/gomodule/redigo v1.9.2 // indirect
 	github.com/injoyai/base v1.0.8
 	github.com/injoyai/goutil v0.0.0-20240523075747-dfca2e705769
+	github.com/injoyai/protocol v0.0.0-20240311040724-291a08e211a2
 
 )

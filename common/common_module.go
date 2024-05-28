@@ -3,20 +3,24 @@ package common
 import (
 	"fmt"
 	"github.com/injoyai/conv/cfg"
+	"github.com/injoyai/conv/codec"
+	"github.com/injoyai/gateway/module/listen"
 	"github.com/injoyai/gateway/module/protocol"
 	"github.com/injoyai/gateway/module/push"
+	"github.com/injoyai/gateway/module/register"
 	"github.com/injoyai/goutil/database/redis"
 	"github.com/injoyai/goutil/database/xorms"
 	"github.com/injoyai/goutil/g"
 )
 
 var (
-	DB    *xorms.Engine
-	Redis *redis.Client
+	DB       *xorms.Engine
+	Redis    *redis.Client
+	Register = register.New()
 )
 
 var (
-	Listener    interface{}
+	Listener    = listen.New()
 	Protocol    *protocol.Manager
 	Pusher      push.Interface
 	Distributor interface{}
@@ -24,7 +28,8 @@ var (
 
 func Init() {
 
-	cfg.Default = cfg.New("./config/config.yaml")
+	//读取配置文件
+	cfg.Default = cfg.New("./config/config.yaml", codec.Yaml)
 	var err error
 
 	//初始化数据库
@@ -40,6 +45,7 @@ func Init() {
 		FieldSync:   cfg.GetBool("database.fieldSync"),
 		TablePrefix: cfg.GetString("database.tablePrefix"),
 	})
+	g.PanicErr(DB.Err())
 
 	//初始化redis
 	Redis = redis.New(
@@ -47,6 +53,7 @@ func Init() {
 		cfg.GetString("password"),
 		cfg.GetInt("db"),
 	)
+	g.PanicErr(Redis.Ping())
 
 	//初始化协议
 	Protocol, err = protocol.New(&protocol.Config{

@@ -1,15 +1,13 @@
 package main
 
 import (
-	"github.com/injoyai/gateway/internal/boot"
-	"github.com/injoyai/gateway/internal/common"
+	"github.com/injoyai/gateway/api"
+	"github.com/injoyai/gateway/common"
+	"github.com/injoyai/gateway/logic"
 )
 
 func main() {
-
-	//初始化
-	boot.Init()
-
-	//运行http服务
-	common.RunHTTPServer()
+	common.Init()
+	logic.Init()
+	api.Init()
 }

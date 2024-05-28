@@ -4,6 +4,7 @@ import (
 	"github.com/injoyai/gateway/module/protocol/built"
 	v1 "github.com/injoyai/gateway/module/protocol/dsl/v1"
 	"github.com/injoyai/gateway/module/protocol/internal/common"
+	"github.com/injoyai/goutil/g"
 )
 
 type Config struct {
@@ -40,7 +41,7 @@ func (this *Manager) Register(name string, codec common.Decoder) {
 	this.built[name] = codec
 }
 
-func (this *Manager) Decode(name string, bs []byte) (bool, []byte, error) {
+func (this *Manager) Decode(name string, bs []byte) (bool, g.Map, error) {
 	//尝试在内置协议协议中查找
 	if c, ok := this.built[name]; ok {
 		bs, err := c.Decode(bs)
@@ -54,5 +55,5 @@ func (this *Manager) Decode(name string, bs []byte) (bool, []byte, error) {
 	}
 
 	//不解析
-	return false, bs, nil
+	return false, g.Map{"bytes": bs}, nil
 }
