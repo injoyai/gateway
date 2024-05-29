@@ -28,8 +28,8 @@ func (this *Manager) Get(Type string, port string) *io.Server {
 	return nil
 }
 
-func (this *Manager) ListenMQTT(sub *MQTTSubscribe, options ...func(*mqtt.ClientOptions)) (*MQTTServer, error) {
-	return NewMQTTServer(sub, options...)
+func (this *Manager) ListenMQTT(sub *MQTTSubscribe, deal Deal, options ...func(*mqtt.ClientOptions)) (*MQTTClient, error) {
+	return NewMQTTClient(sub, deal, options...)
 }
 
 func (this *Manager) Listen(Type string, port string, options ...io.OptionServer) (*io.Server, error) {

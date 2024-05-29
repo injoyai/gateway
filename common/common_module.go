@@ -3,11 +3,11 @@ package common
 import (
 	"fmt"
 	"github.com/injoyai/conv/cfg"
-	"github.com/injoyai/conv/codec"
+	"github.com/injoyai/gateway/module/client"
 	"github.com/injoyai/gateway/module/listen"
 	"github.com/injoyai/gateway/module/protocol"
-	"github.com/injoyai/gateway/module/push"
 	"github.com/injoyai/gateway/module/register"
+	"github.com/injoyai/goutil/database/mysql"
 	"github.com/injoyai/goutil/database/redis"
 	"github.com/injoyai/goutil/database/xorms"
 	"github.com/injoyai/goutil/g"
@@ -22,23 +22,20 @@ var (
 var (
 	Listener    = listen.New()
 	Protocol    *protocol.Manager
-	Pusher      push.Interface
+	Client      = client.New()
 	Distributor interface{}
 )
 
 func Init() {
 
-	//读取配置文件
-	cfg.Default = cfg.New("./config/config.yaml", codec.Yaml)
 	var err error
 
 	//初始化数据库
-	DB = xorms.New(&xorms.Config{
-		Type: cfg.GetString("database.type"),
-		DSN: fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+	DB = mysql.NewXorm(&xorms.Option{
+		DSN: fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8",
 			cfg.GetString("database.username"),
 			cfg.GetString("database.password"),
-			cfg.GetString("database.host", "localhost"),
+			cfg.GetString("database.host"),
 			cfg.GetInt("database.port", 3306),
 			cfg.GetString("database.database"),
 		),
@@ -61,12 +58,13 @@ func Init() {
 	})
 	g.PanicErr(err)
 
-	//初始化推送
-	Pusher = push.New(&push.Config{
-		Type:  cfg.GetString("push.type"),
-		Host:  cfg.GetString("push.host"),
-		Port:  cfg.GetInt("push.port"),
-		Param: cfg.GetMap("push"),
-	})
+	//初始化客户端管理
+	//_, err = Client.Dial(&client.Config{
+	//	Type:  cfg.GetString("push.type"),
+	//	Addr:  cfg.GetString("push.addr"),
+	//	Port:  cfg.GetString("push.port"),
+	//	Param: cfg.GetMap("push"),
+	//})
+	g.PanicErr(err)
 
 }

@@ -1,9 +1,9 @@
-package push
+package client
 
 import "github.com/injoyai/goutil/net/http"
 
-func NewHTTP() *HTTP {
-	return &HTTP{http.NewClient()}
+func NewHTTP() (*HTTP, error) {
+	return &HTTP{http.NewClient()}, nil
 }
 
 type HTTP struct {

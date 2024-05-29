@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"github.com/injoyai/conv"
 	"github.com/injoyai/gateway/module/protocol/internal/common"
+	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/goutil/script/dsl"
 	"io/fs"
@@ -33,7 +33,7 @@ type decode struct {
 	d *dsl.Decode
 }
 
-func (this *decode) Decode(bs []byte) ([]byte, error) {
-	_, result, err := this.d.Do(bs)
-	return conv.Bytes(result), err
+func (this *decode) Decode(bs []byte) (g.Map, error) {
+	m, _, err := this.d.Do(bs)
+	return m, err
 }

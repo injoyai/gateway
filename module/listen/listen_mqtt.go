@@ -4,7 +4,11 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func NewMQTTServer(sub *MQTTSubscribe, options ...func(*mqtt.ClientOptions)) (*MQTTServer, error) {
+type Deal interface {
+	DealMessage(c interface{}, msg []byte) (ack bool)
+}
+
+func NewMQTTClient(sub *MQTTSubscribe, deal Deal, options ...func(*mqtt.ClientOptions)) (*MQTTClient, error) {
 	op := mqtt.NewClientOptions()
 	for _, f := range options {
 		f(op)
@@ -15,15 +19,16 @@ func NewMQTTServer(sub *MQTTSubscribe, options ...func(*mqtt.ClientOptions)) (*M
 	if err := token.Error(); err != nil {
 		return nil, err
 	}
-	ms := &MQTTServer{
+	ms := &MQTTClient{
 		Client:  c,
 		options: op,
 		sub:     sub,
-		message: make(chan mqtt.Message),
 	}
 
 	token = c.Subscribe(sub.Topic, sub.Qos, func(client mqtt.Client, message mqtt.Message) {
-		ms.message <- message
+		if deal.DealMessage(ms, message.Payload()) {
+			message.Ack()
+		}
 	})
 	token.Wait()
 	if token.Error() != nil {
@@ -34,15 +39,14 @@ func NewMQTTServer(sub *MQTTSubscribe, options ...func(*mqtt.ClientOptions)) (*M
 	return ms, nil
 }
 
-type MQTTServer struct {
+type MQTTClient struct {
 	mqtt.Client
 	options *mqtt.ClientOptions
 	sub     *MQTTSubscribe
-	message chan mqtt.Message
 	GetQos  func(topic string) (qos byte, retained bool)
 }
 
-func (this *MQTTServer) Publish(topic string, data interface{}) error {
+func (this *MQTTClient) Publish(topic string, data interface{}) error {
 	var qos byte
 	var retained bool
 	if this.GetQos != nil {

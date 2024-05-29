@@ -5,6 +5,7 @@ import (
 	v1 "github.com/injoyai/gateway/module/protocol/dsl/v1"
 	"github.com/injoyai/gateway/module/protocol/internal/common"
 	"github.com/injoyai/goutil/g"
+	"github.com/injoyai/goutil/oss"
 )
 
 type Config struct {
@@ -14,18 +15,13 @@ type Config struct {
 func New(cfg *Config) (*Manager, error) {
 
 	m := &Manager{
-		built: map[string]common.Decoder{},
+		built: built.All, //加载内置协议
 		dsl:   map[string]common.Decoder{},
-	}
-
-	//加载内置协议
-	for k, v := range built.All {
-		m.Register(k, v)
+		cfg:   cfg,
 	}
 
 	//加载dsl
-	var err error
-	m.dsl, err = v1.New(cfg.DslDir)
+	err := m.LoadingDSL()
 
 	return m, err
 }
@@ -33,6 +29,18 @@ func New(cfg *Config) (*Manager, error) {
 type Manager struct {
 	built map[string]common.Decoder
 	dsl   map[string]common.Decoder
+	cfg   *Config
+}
+
+// LoadingDSL 加载dsl
+func (this *Manager) LoadingDSL() error {
+	oss.NewDir(this.cfg.DslDir)
+	dsl, err := v1.New(this.cfg.DslDir)
+	if err != nil {
+		return err
+	}
+	this.dsl = dsl
+	return nil
 }
 
 // Register 注册协议解析,代码层面,

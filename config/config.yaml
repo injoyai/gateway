@@ -1,10 +1,10 @@
 #数据库配置
 database:
   type: mysql
-  host: 127.0.0.1
+  host: 192.168.10.23
   port: 3306
-  username: root
-  password: root
+  username: test
+  password: RxTnAppSbsRc4jpJ
   database: test
 
   fieldSync: true
@@ -20,8 +20,22 @@ redis:
 protocol:
   dslDir: ./data/dsl/
 
-#推送配置
-push:
-  type: http
-  host: 127.0.0.1
-  port: 8080
+#默认监听推送配置
+link:
+  - model: test
+    subscribe:
+      type: mqtt
+      addr: 192.168.10.23:1883
+      subscribe: server
+      username:
+      password:
+      connectTimeout: 30s
+      clientID: "server"
+    frame:
+    protocol: dlt645
+    publish:
+      type: mqtt
+      addr: 192.168.10.23:1883
+      public: api
+
+

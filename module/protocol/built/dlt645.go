@@ -2,6 +2,7 @@ package built
 
 import (
 	"github.com/injoyai/goutil/g"
+	"github.com/injoyai/logs"
 	"github.com/injoyai/protocol/dlt645"
 )
 
@@ -13,6 +14,7 @@ func (this *Dlt645) Decode(bs []byte) (g.Map, error) {
 	if err != nil {
 		return nil, err
 	}
+	logs.Debug(p.Data.HEX())
 	f, err := p.Result()
 	if err != nil {
 		return nil, err

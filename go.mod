@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/gin-gonic/gin v1.7.4
 	github.com/gogf/gf v1.16.9
 	github.com/gomodule/redigo v1.9.2 // indirect
