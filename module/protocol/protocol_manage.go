@@ -49,19 +49,22 @@ func (this *Manager) Register(name string, codec common.Decoder) {
 	this.built[name] = codec
 }
 
-func (this *Manager) Decode(name string, bs []byte) (bool, g.Map, error) {
+func (this *Manager) Decode(name string, bs []byte) (exist bool, m *common.Message, err error) {
+
+	defer func() { m.Deal() }()
+
 	//尝试在内置协议协议中查找
 	if c, ok := this.built[name]; ok {
-		bs, err := c.Decode(bs)
-		return true, bs, err
+		m, err = c.Decode(bs)
+		return true, m, err
 	}
 
 	//尝试在dsl中查找
 	if c, ok := this.dsl[name]; ok {
-		bs, err := c.Decode(bs)
-		return true, bs, err
+		m, err = c.Decode(bs)
+		return true, m, err
 	}
 
 	//不解析
-	return false, g.Map{"bytes": bs}, nil
+	return false, &common.Message{Nature: g.M{"bytes": bs}}, nil
 }

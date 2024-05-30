@@ -9,6 +9,7 @@ import (
 
 // Link 链路
 type Link struct {
+	Name      string         `json:"name"`       //
 	Model     string         `json:"-"`          //型号,例设备型号
 	Subscribe *client.Config `json:"-"`          //监听
 	Frame     *buf.Frame     `json:"-" yaml:"-"` //分包配置
@@ -18,12 +19,11 @@ type Link struct {
 
 // Message 消息
 type Message struct {
-	Model string `json:"model"` //型号,例设备型号
-	ID    string `json:"id"`    //消息id,uuid,全局唯一,防止重复
-
-	Link     []*Link `json:"-"`        //链路信息
-	Protocol string  `json:"protocol"` //协议解析的标识
-	Data     g.Map   `json:"data"`     //数据
+	Model    string `json:"model"`    //型号,例设备型号
+	ID       string `json:"id"`       //消息id,uuid,全局唯一,防止重复
+	No       string `json:"no"`       //设备唯一标识
+	Protocol string `json:"protocol"` //协议解析的标识
+	Data     g.Map  `json:"data"`     //数据
 }
 
 func (this *Message) Bytes() []byte {

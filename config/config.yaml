@@ -20,15 +20,13 @@ redis:
 protocol:
   dslDir: ./data/dsl/
 
-#默认监听推送配置
+#默认链路(监听-解析-推送)配置
 link:
   - model: test
     subscribe:
       type: mqtt
       addr: 192.168.10.23:1883
       subscribe: server
-      username:
-      password:
       connectTimeout: 30s
       clientID: "server"
     frame:
@@ -36,6 +34,8 @@ link:
     publish:
       type: mqtt
       addr: 192.168.10.23:1883
-      public: api
+      publish: api
+      param:
+      clientID: publish
 
 

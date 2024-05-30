@@ -1,8 +1,8 @@
 package v1
 
 import (
+	"github.com/injoyai/conv"
 	"github.com/injoyai/gateway/module/protocol/internal/common"
-	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/goutil/script/dsl"
 	"io/fs"
@@ -33,7 +33,15 @@ type decode struct {
 	d *dsl.Decode
 }
 
-func (this *decode) Decode(bs []byte) (g.Map, error) {
+func (this *decode) Decode(bs []byte) (*common.Message, error) {
 	m, _, err := this.d.Do(bs)
-	return m, err
+	if err != nil {
+		return nil, err
+	}
+	return &common.Message{
+		Model:  conv.String(m["model"]),
+		No:     conv.String(m["no"]),
+		ID:     conv.String(m["id"]),
+		Nature: m,
+	}, nil
 }

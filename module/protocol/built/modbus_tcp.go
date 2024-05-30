@@ -5,12 +5,13 @@ import (
 	"errors"
 	"github.com/injoyai/conv"
 	"github.com/injoyai/gateway/module/protocol/built/internal/modbus"
+	"github.com/injoyai/gateway/module/protocol/internal/common"
 	"github.com/injoyai/goutil/g"
 )
 
 type ModbusTCP struct{}
 
-func (this *ModbusTCP) Decode(bs []byte) (g.Map, error) {
+func (this *ModbusTCP) Decode(bs []byte) (*common.Message, error) {
 	length := len(bs)
 	if length < 9 {
 		return nil, errors.New("数据长度异常(小于9):" + hex.EncodeToString(bs))
@@ -38,10 +39,10 @@ func (this *ModbusTCP) Decode(bs []byte) (g.Map, error) {
 		m[conv.String(i)] = f.Data[i : i+2]
 	}
 
-	return g.Map{
-		"id":   conv.String(conv.Int(f.Order)),
-		"no":   string(f.Slave),
-		"data": m,
+	return &common.Message{
+		No:     string(f.Slave),
+		ID:     conv.String(conv.Int(f.Order)),
+		Nature: m,
 	}, nil
 
 }

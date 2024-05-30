@@ -41,7 +41,7 @@ func (this *Manager) Dial(cfg *Config) (Client, error) {
 func (this *Manager) Publish(key string, topic string, data interface{}) (err error) {
 
 	defer func() {
-		logs.Writef("[%s.%s] 值: %v, 结果: %s\n", key, topic, data, conv.New(err).String("成功"))
+		logs.Writef("[%s.%s] 值: %s, 结果: %s\n", key, topic, conv.String(data), conv.New(err).String("成功"))
 	}()
 
 	c, ok := this.m[key]
