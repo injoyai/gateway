@@ -1,12 +1,74 @@
 package client
 
 import (
+	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/injoyai/conv"
+	"sync"
 	"time"
 )
 
-func NewMQTTClient(cfg *Config) (*MQTTClient, error) {
+var (
+	cacheMQTT = make(map[string]*MQTTClient)
+	cacheMu   sync.RWMutex
+)
+
+func NewMQTTClient(cfg *Config) (*MQTTSubscribe, error) {
+
+	clientKey := cfg.GetKey()
+	cacheMu.RLock()
+	client, ok := cacheMQTT[clientKey]
+	cacheMu.RUnlock()
+	m := conv.NewMap(cfg.Param)
+	if !ok {
+		c, err := newClient(cfg)
+		if err != nil {
+			return nil, err
+		}
+		client = &MQTTClient{
+			Client:    c,
+			key:       clientKey,
+			subscribe: make(map[string]*MQTTSubscribe),
+		}
+		cacheMQTT[cfg.GetKey()] = client
+	}
+
+	client.subscribeMu.RLock()
+	_, ok = client.subscribe[cfg.Subscribe]
+	client.subscribeMu.RUnlock()
+	if ok {
+		return nil, fmt.Errorf("主题[%s]已被订阅", cfg.Subscribe)
+	}
+
+	ms := &MQTTSubscribe{
+		MQTTClient:      client,
+		publishQos:      m.GetUint8("publishQos"),
+		publishRetained: m.GetBool("publishRetained"),
+		subscribeTopic:  cfg.Subscribe,
+		subscribeQos:    m.GetUint8("subscribeQos"),
+		onMessage:       nil,
+	}
+	if len(cfg.Subscribe) > 0 {
+		token := client.Client.Subscribe(cfg.Subscribe, m.GetUint8("subscribeQos"), func(client mqtt.Client, message mqtt.Message) {
+			if ms.onMessage != nil && ms.onMessage(ms, message.Payload()) {
+				message.Ack()
+			}
+		})
+		token.Wait()
+		if token.Error() != nil {
+			ms.Close()
+			return nil, token.Error()
+		}
+	}
+
+	client.subscribeMu.Lock()
+	client.subscribe[cfg.Subscribe] = ms
+	client.subscribeMu.Unlock()
+	return ms, nil
+
+}
+
+func newClient(cfg *Config) (mqtt.Client, error) {
 	m := conv.NewMap(cfg.Param)
 	op := mqtt.NewClientOptions()
 	op.AddBroker(cfg.Addr)
@@ -18,57 +80,48 @@ func NewMQTTClient(cfg *Config) (*MQTTClient, error) {
 	op.SetCleanSession(m.GetBool("cleanSession"))
 	op.SetCleanSession(true)
 	op.SetAutoReconnect(true) //自动重连
-
 	c := mqtt.NewClient(op)
 	token := c.Connect()
 	token.Wait()
 	if err := token.Error(); err != nil {
 		return nil, err
 	}
-	ms := &MQTTClient{
-		Client:  c,
-		options: op,
-	}
-
-	if len(cfg.Subscribe) > 0 {
-		token = c.Subscribe(cfg.Subscribe, m.GetUint8("qos"), func(client mqtt.Client, message mqtt.Message) {
-			if ms.onMessage != nil && ms.onMessage(ms, message.Payload()) {
-				message.Ack()
-			}
-		})
-		token.Wait()
-		if token.Error() != nil {
-			c.Disconnect(0)
-			return nil, token.Error()
-		}
-	}
-
-	return ms, nil
+	return c, nil
 }
 
 type MQTTClient struct {
 	mqtt.Client
-	options   *mqtt.ClientOptions
-	GetQos    func(topic string) (qos byte, retained bool)
-	onMessage MessageFunc
+	key         string
+	subscribe   map[string]*MQTTSubscribe
+	subscribeMu sync.RWMutex
 }
 
-func (this *MQTTClient) OnMessage(f MessageFunc) {
+type MQTTSubscribe struct {
+	*MQTTClient
+	publishQos      byte
+	publishRetained bool
+	subscribeTopic  string
+	subscribeQos    byte
+	onMessage       MessageFunc
+}
+
+func (this *MQTTSubscribe) OnMessage(f MessageFunc) {
 	this.onMessage = f
 }
 
-func (this *MQTTClient) Publish(topic string, data interface{}) error {
-	var qos byte
-	var retained bool
-	if this.GetQos != nil {
-		qos, retained = this.GetQos(topic)
-	}
-	token := this.Client.Publish(topic, qos, retained, conv.Bytes(data))
+func (this *MQTTSubscribe) Publish(topic string, data interface{}) error {
+	token := this.Client.Publish(topic, this.publishQos, this.publishRetained, conv.Bytes(data))
 	token.Wait()
 	return token.Error()
 }
 
-type MQTTSubscribe struct {
-	Topic string
-	Qos   uint8
+func (this *MQTTSubscribe) Close() error {
+	delete(this.MQTTClient.subscribe, this.subscribeTopic)
+	if len(this.MQTTClient.subscribe) == 0 {
+		this.MQTTClient.Client.Disconnect(0)
+		cacheMu.Lock()
+		delete(cacheMQTT, this.MQTTClient.key)
+		cacheMu.Unlock()
+	}
+	return nil
 }

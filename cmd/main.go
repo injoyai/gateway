@@ -86,23 +86,36 @@ func main() {
 	links := []*distribute.Link(nil)
 	for _, v := range cfg.Default.GetInterfaces("link") {
 		m := conv.NewMap(v)
-		logs.Debug(v)
 		links = append(links, &distribute.Link{
+			Name:  m.GetString("name"),
 			Model: m.GetString("model"),
-			Subscribe: &client.Config{
-				Type:      m.GetString("subscribe.type"),
-				Addr:      m.GetString("subscribe.addr"),
-				Subscribe: m.GetString("subscribe.subscribe"),
-				Param:     m.GetGMap("subscribe"),
-			},
-			//Frame:    v.(*distribute.Link).Frame,
+			Subscribe: func() []*client.Config {
+				list := []*client.Config(nil)
+				for _, subscribe := range m.GetInterfaces("subscribe") {
+					m2 := conv.NewMap(subscribe)
+					list = append(list, &client.Config{
+						Type:      m2.GetString("type"),
+						Addr:      m2.GetString("addr"),
+						Subscribe: m2.GetString("subscribe"),
+						Param:     m2.GetGMap(""),
+					})
+				}
+				return list
+			}(),
 			Protocol: m.GetString("protocol"),
-			Publish: &client.Config{
-				Type:    m.GetString("publish.type"),
-				Addr:    m.GetString("publish.addr"),
-				Publish: m.GetString("publish.publish"),
-				Param:   m.GetGMap("publish"),
-			},
+			Publish: func() []*client.Config {
+				list := []*client.Config(nil)
+				for _, publish := range m.GetInterfaces("publish") {
+					m2 := conv.NewMap(publish)
+					list = append(list, &client.Config{
+						Type:    m2.GetString("type"),
+						Addr:    m2.GetString("addr"),
+						Publish: m2.GetString("publish"),
+						Param:   m2.GetGMap(""),
+					})
+				}
+				return list
+			}(),
 		})
 	}
 	err := logic.Init(links)

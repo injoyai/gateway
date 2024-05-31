@@ -23,19 +23,21 @@ protocol:
 #默认链路(监听-解析-推送)配置
 link:
   - model: test
+    name: 默认链路
+    #监听配置
     subscribe:
       type: mqtt
       addr: 192.168.10.23:1883
       subscribe: server
       connectTimeout: 30s
       clientID: "server"
-    frame:
+    #协议解析
     protocol: dlt645
+    #数据推送
     publish:
       type: mqtt
       addr: 192.168.10.23:1883
       publish: api
-      param:
       clientID: publish
 
 

@@ -20,13 +20,13 @@ type Manager struct {
 
 func (this *Manager) Dial(cfg *Config) (Client, error) {
 	key := cfg.GetKey()
-	logs.Debug(key)
 	this.mu.RLock()
 	c, ok := this.m[key]
 	this.mu.RUnlock()
 	if !ok {
 		var err error
 		c, err = cfg.Dial()
+		logs.Infof("建立连接: %s, 结果: %s\n", key, conv.New(err).String("成功"))
 		if err != nil {
 			return nil, err
 		}

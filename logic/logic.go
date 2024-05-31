@@ -4,7 +4,9 @@ import (
 	"github.com/injoyai/conv"
 	"github.com/injoyai/gateway/common"
 	"github.com/injoyai/gateway/module/distribute"
+	"github.com/injoyai/gateway/module/publish"
 	"github.com/injoyai/logs"
+	"time"
 )
 
 func Init(links []*distribute.Link) error {
@@ -19,8 +21,8 @@ func Init(links []*distribute.Link) error {
 
 func Listen(link *distribute.Link) error {
 
-	{
-		c, err := common.Client.Dial(link.Subscribe)
+	for _, subscribe := range link.Subscribe {
+		c, err := common.Client.Dial(subscribe)
 		if err != nil {
 			return err
 		}
@@ -29,8 +31,8 @@ func Listen(link *distribute.Link) error {
 		})
 	}
 
-	{
-		c, err := common.Client.Dial(link.Publish)
+	for _, publish := range link.Publish {
+		c, err := common.Client.Dial(publish)
 		if err != nil {
 			return err
 		}
@@ -53,17 +55,20 @@ func DealMessage(link *distribute.Link, msg []byte) (ack bool) {
 	}
 
 	//4. 数据整理
-	m := &distribute.Message{
+	m := &publish.Message{
 		Model:    conv.SelectString(len(data.Model) > 0, data.Model, link.Model),
 		ID:       data.ID,
 		No:       data.No,
 		Protocol: conv.SelectString(exist, link.Protocol, ""), //link.Protocol,
 		Data:     data.Nature,
+		Time:     time.Now().UnixMilli(),
 	}
 
 	//5. 数据推送
-	err = common.Client.Publish(link.Publish.GetKey(), link.Publish.Publish, m)
-	logs.PrintErr(err)
+	for _, publish := range link.Publish {
+		err = common.Client.Publish(publish.GetKey(), publish.Publish, m)
+		logs.PrintErr(err)
+	}
 
 	return
 }

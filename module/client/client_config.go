@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/g"
+	"github.com/injoyai/io"
 	"github.com/injoyai/io/buf"
 )
 
@@ -13,6 +14,7 @@ type Config struct {
 	Subscribe string                 //监听/订阅 端口/主题
 	Publish   string                 //发布/推送 topic
 	Param     map[string]interface{} //监听/推送参数
+	Frame     *buf.Frame             //分包配置
 }
 
 func (this *Config) GetListenPort() int {
@@ -30,12 +32,12 @@ func (this *Config) init() {
 
 func (this *Config) GetKey() string {
 	switch this.Type {
-	case "mqtt":
+	case io.MQTT:
 		this.init()
 		return fmt.Sprintf("%s#%s#%s", this.Type, this.Addr, this.Param["clientID"])
-	case "serial":
+	case io.Serial:
 		return fmt.Sprintf("%s#%s", this.Type, this.Subscribe)
-	case "tcp", "udp", "http", "websocket":
+	case io.TCP, io.UDP, io.HTTP, io.Websocket:
 		return fmt.Sprintf("net#%s", this.Subscribe)
 	default:
 		return fmt.Sprintf("%s#%s#%s", this.Type, this.Addr, this.Subscribe)
@@ -44,6 +46,9 @@ func (this *Config) GetKey() string {
 }
 
 func (this *Config) Dial() (Client, error) {
+	if this.Frame == nil {
+		this.Frame = &buf.Frame{}
+	}
 
 	switch this.Type {
 	//case "rabbitmq":
@@ -54,18 +59,14 @@ func (this *Config) Dial() (Client, error) {
 	//	return NewKafka()
 	//case "http":
 	//	return NewHTTP()
-	case "mqtt":
+	case io.MQTT:
 		this.init()
 		return NewMQTTClient(this)
 
+	case io.TCP + "client":
+		return NewIOClient(this, this.Frame)
+
 	default:
-		return NewIOServer(this, &buf.Frame{})
+		return NewIOServer(this, this.Frame)
 	}
 }
-
-type Client interface {
-	Publish(topic string, data interface{}) error
-	OnMessage(f MessageFunc)
-}
-
-type MessageFunc func(c interface{}, bs []byte) (ack bool)
